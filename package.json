@@ -33,7 +33,7 @@
     "dev": "(cd ./example && vite --force)",
     "build": "npm run clean && npm run build:esm && npm run build:copy-styles",
     "build:esm": "tsc",
-    "build:copy-styles": "cp-cli ./src/style ./dist/esm",
+    "build:copy-styles": "cp-cli ./src/style ./dist/esm/style",
     "build:example": "(cd ./example && tsc && vite build && mkdir \"../public/\" && cp-cli example-app ../public/)",
     "build:docs": "npx typedoc",
     "clean": "rimraf dist public"
