@@ -62,6 +62,10 @@ export type PdfHighlighterUtils = {
    * scroll to.
    */
   scrollToHighlight(highlight: Highlight): void;
+  /**
+   * Check if viewer is ready to be scrolled..
+   */
+  isScrollToHighlightAvailable(): boolean;
 
   /**
    * Get a reference to the currently used instance of a PDF Viewer.

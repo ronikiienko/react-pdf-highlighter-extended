@@ -514,6 +514,16 @@ export const PdfHighlighter = ({
     getTip: () => tip,
     setTip,
     updateTipPosition: updateTipPositionRef.current,
+    isScrollToHighlightAvailable(): boolean {
+      const container = viewerRef.current?.container;
+      if (!container) return false;
+
+      const firstPageView = viewerRef.current?.getPageView(0);
+      if (!firstPageView) return false;
+      if (!firstPageView.viewport) return false;
+
+      return true;
+    }
   };
 
   utilsRef(pdfHighlighterUtils);
