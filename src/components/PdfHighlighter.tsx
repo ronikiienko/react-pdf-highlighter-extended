@@ -327,6 +327,9 @@ export const PdfHighlighter = ({
         renderHighlightLayers();
         return ghostHighlightRef.current;
       },
+      clear() {
+        clearTextSelection();
+      }
     };
 
     onSelectionFinished && onSelectionFinished(selectionRef.current);
@@ -586,6 +589,9 @@ export const PdfHighlighter = ({
                   renderHighlightLayers();
                   return ghostHighlightRef.current;
                 },
+                clear() {
+                  resetSelection();
+                }
               };
 
               onSelectionFinished && onSelectionFinished(selectionRef.current);

@@ -142,6 +142,8 @@ export type ViewportHighlight<T extends Highlight = Highlight> = Omit<
 export type PdfSelection = GhostHighlight & {
   /** Convert the current selection into a temporary highlight */
   makeGhostHighlight(): GhostHighlight;
+  /** Remove the current selection */
+  clear(): void;
 };
 
 /**
