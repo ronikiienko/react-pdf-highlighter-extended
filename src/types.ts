@@ -142,7 +142,13 @@ export type ViewportHighlight<T extends Highlight = Highlight> = Omit<
 export type PdfSelection = GhostHighlight & {
   /** Convert the current selection into a temporary highlight */
   makeGhostHighlight(): GhostHighlight;
-  /** Remove the current selection */
+  /** Remove the current selection
+   * There is option to add "ghostHighlight" in react-pdf-highlighter-extended,
+   * It internally creates highlight and renders HighlightContainer with it
+   * But:
+   * 1. It doesn't expose ghostHighlight (no way to update it, only remove)
+   * 2. The only way to add ghost highlight is through selection.makeGhostHighlight(). No way to add extended highlight, with color or other fields
+   * */
   clear(): void;
 };
 
