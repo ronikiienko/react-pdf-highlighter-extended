@@ -6,18 +6,20 @@ type GroupedHighlights = {
 
 const groupHighlightsByPage = (
   highlights: Array<Highlight | GhostHighlight | null>,
-): GroupedHighlights =>
-  highlights.reduce<GroupedHighlights>((acc, highlight) => {
+): GroupedHighlights => {
+  const grouped: GroupedHighlights = {};
+
+  for (const highlight of highlights) {
     if (!highlight) {
-      return acc;
+      continue;
     }
     const pageNumbers = [
       highlight.position.boundingRect.pageNumber,
       ...highlight.position.rects.map((rect) => rect.pageNumber || 0),
     ];
+    for (const pageNumber of pageNumbers) {
+      grouped[pageNumber] ||= [];
 
-    pageNumbers.forEach((pageNumber) => {
-      acc[pageNumber] ||= [];
       const pageSpecificHighlight = {
         ...highlight,
         position: {
@@ -27,10 +29,12 @@ const groupHighlightsByPage = (
           ),
         },
       };
-      acc[pageNumber].push(pageSpecificHighlight);
-    });
+      grouped[pageNumber].push(pageSpecificHighlight);
+    }
+  }
 
-    return acc;
-  }, {});
+  return grouped;
+}
+
 
 export default groupHighlightsByPage;
