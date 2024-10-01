@@ -5,7 +5,7 @@ type GroupedHighlights = {
 };
 
 const groupHighlightsByPage = (
-  highlights: Array<Highlight | GhostHighlight | null>,
+  highlights: Array<Highlight | GhostHighlight | null>
 ): GroupedHighlights => {
   const grouped: GroupedHighlights = {};
 
@@ -32,9 +32,9 @@ const groupHighlightsByPage = (
         position: {
           ...highlight.position,
           rects: highlight.position.rects.filter(
-            (rect) => pageNumber === rect.pageNumber,
-          ),
-        },
+            (rect) => pageNumber === rect.pageNumber
+          )
+        }
       };
       grouped[pageNumber].push(pageSpecificHighlight);
     }
@@ -42,7 +42,7 @@ const groupHighlightsByPage = (
 
   console.log('grouped highlights', grouped);
   return grouped;
-}
+};
 
 
 export default groupHighlightsByPage;
