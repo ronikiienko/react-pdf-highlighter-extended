@@ -40,7 +40,6 @@ const groupHighlightsByPage = (
     }
   }
 
-  console.log('grouped highlights', grouped);
   return grouped;
 };
 
