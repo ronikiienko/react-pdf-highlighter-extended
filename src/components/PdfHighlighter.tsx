@@ -339,6 +339,7 @@ export const PdfHighlighter = ({
   };
 
   const handleMouseDown: PointerEventHandler = (event) => {
+    if (event.button !== 0) return; // Only handle left clicks
     if (
       !isHTMLElement(event.target) ||
       asElement(event.target).closest(".PdfHighlighter__tip-container") // Ignore selections on tip container

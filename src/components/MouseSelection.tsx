@@ -190,6 +190,7 @@ export const MouseSelection = ({
     };
 
     const handleMouseDown = (event: MouseEvent) => {
+      if (event.button !== 0) return; // Only left click
       const shouldStart = (event: MouseEvent) =>
         enableAreaSelection(event) &&
         isHTMLElement(event.target) &&
