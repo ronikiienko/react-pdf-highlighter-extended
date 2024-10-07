@@ -10,12 +10,12 @@ import React, {
   ReactNode,
   useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { createRoot } from "react-dom/client";
 import {
   PdfHighlighterContext,
-  PdfHighlighterUtils,
+  PdfHighlighterUtils
 } from "../contexts/PdfHighlighterContext";
 import { scaledToViewport, viewportPositionToScaled } from "../lib/coordinates";
 import getBoundingRect from "../lib/get-bounding-rect";
@@ -26,7 +26,7 @@ import {
   findOrCreateContainerLayer,
   getPagesFromRange,
   getWindow,
-  isHTMLElement,
+  isHTMLElement
 } from "../lib/pdfjs-dom";
 import {
   Content,
@@ -36,13 +36,18 @@ import {
   PdfScaleValue,
   PdfSelection,
   Tip,
-  ViewportPosition,
+  ViewportPosition
 } from "../types";
 import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
 
-import type { EventBus as TEventBus, PDFLinkService as TPDFLinkService, PDFViewer as TPDFViewer } from "pdfjs-dist/web/pdf_viewer.mjs";
+import type {
+  EventBus as TEventBus,
+  PDFLinkService as TPDFLinkService,
+  PDFViewer as TPDFViewer
+} from "pdfjs-dist/web/pdf_viewer.mjs";
+import { removeNullCharacters } from "../lib/string";
 
 let EventBus: typeof TEventBus, PDFLinkService: typeof TPDFLinkService, PDFViewer: typeof TPDFViewer;
 
@@ -62,7 +67,7 @@ const DEFAULT_TEXT_SELECTION_COLOR = "rgba(153,193,218,255)";
 const findOrCreateHighlightLayer = (textLayer: HTMLElement) => {
   return findOrCreateContainerLayer(
     textLayer,
-    "PdfHighlighter__highlight-layer",
+    "PdfHighlighter__highlight-layer"
   );
 };
 
@@ -179,21 +184,21 @@ export interface PdfHighlighterProps {
  * @category Component
  */
 export const PdfHighlighter = ({
-  highlights,
-  onScrollAway,
-  pdfScaleValue = DEFAULT_SCALE_VALUE,
-  onSelection: onSelectionFinished,
-  onCreateGhostHighlight,
-  onRemoveGhostHighlight,
-  selectionTip,
-  enableAreaSelection,
-  mouseSelectionStyle,
-  pdfDocument,
-  children,
-  textSelectionColor = DEFAULT_TEXT_SELECTION_COLOR,
-  utilsRef,
-  style,
-}: PdfHighlighterProps) => {
+                                 highlights,
+                                 onScrollAway,
+                                 pdfScaleValue = DEFAULT_SCALE_VALUE,
+                                 onSelection: onSelectionFinished,
+                                 onCreateGhostHighlight,
+                                 onRemoveGhostHighlight,
+                                 selectionTip,
+                                 enableAreaSelection,
+                                 mouseSelectionStyle,
+                                 pdfDocument,
+                                 children,
+                                 textSelectionColor = DEFAULT_TEXT_SELECTION_COLOR,
+                                 utilsRef,
+                                 style
+                               }: PdfHighlighterProps) => {
   // State
   const [tip, setTip] = useState<Tip | null>(null);
   const [isViewerReady, setIsViewerReady] = useState(false);
@@ -201,21 +206,22 @@ export const PdfHighlighter = ({
   // Refs
   const containerNodeRef = useRef<HTMLDivElement | null>(null);
   const highlightBindingsRef = useRef<{ [page: number]: HighlightBindings }>(
-    {},
+    {}
   );
   const ghostHighlightRef = useRef<GhostHighlight | null>(null);
   const selectionRef = useRef<PdfSelection | null>(null);
   const scrolledToHighlightIdRef = useRef<string | null>(null);
   const isAreaSelectionInProgressRef = useRef(false);
   const isEditInProgressRef = useRef(false);
-  const updateTipPositionRef = useRef(() => { });
+  const updateTipPositionRef = useRef(() => {
+  });
 
   const eventBusRef = useRef<InstanceType<typeof EventBus>>(new EventBus());
   const linkServiceRef = useRef<InstanceType<typeof PDFLinkService>>(
     new PDFLinkService({
       eventBus: eventBusRef.current,
-      externalLinkTarget: 2,
-    }),
+      externalLinkTarget: 2
+    })
   );
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const viewerRef = useRef<InstanceType<typeof PDFViewer> | null>(null);
@@ -232,7 +238,7 @@ export const PdfHighlighter = ({
           eventBus: eventBusRef.current,
           textLayerMode: 2,
           removePageBorders: true,
-          linkService: linkServiceRef.current,
+          linkService: linkServiceRef.current
         });
 
       viewerRef.current.setDocument(pdfDocument);
@@ -257,7 +263,12 @@ export const PdfHighlighter = ({
 
     const doc = containerNodeRef.current.ownerDocument;
 
-    eventBusRef.current.on("textlayerrendered", renderHighlightLayers);
+    const onTextLayerRendered = () => {
+      renderHighlightLayers();
+      setCopyHandlers();
+    }
+
+    eventBusRef.current.on("textlayerrendered", onTextLayerRendered);
     eventBusRef.current.on("pagesinit", handleScaleValue);
     doc.addEventListener("keydown", handleKeyDown);
 
@@ -265,7 +276,7 @@ export const PdfHighlighter = ({
 
     return () => {
       eventBusRef.current.off("pagesinit", handleScaleValue);
-      eventBusRef.current.off("textlayerrendered", renderHighlightLayers);
+      eventBusRef.current.off("textlayerrendered", onTextLayerRendered);
       doc.removeEventListener("keydown", handleKeyDown);
       resizeObserverRef.current?.disconnect();
     };
@@ -298,16 +309,16 @@ export const PdfHighlighter = ({
 
     const viewportPosition: ViewportPosition = {
       boundingRect: getBoundingRect(rects),
-      rects,
+      rects
     };
 
     const scaledPosition = viewportPositionToScaled(
       viewportPosition,
-      viewerRef.current,
+      viewerRef.current
     );
 
     const content: Content = {
-      text: selection.toString().split("\n").join(" "), // Make all line breaks spaces
+      text: selection.toString().split("\n").join(" ") // Make all line breaks spaces
     };
 
     selectionRef.current = {
@@ -318,11 +329,11 @@ export const PdfHighlighter = ({
         ghostHighlightRef.current = {
           content: content,
           type: "text",
-          position: scaledPosition,
+          position: scaledPosition
         };
 
         onCreateGhostHighlight &&
-          onCreateGhostHighlight(ghostHighlightRef.current);
+        onCreateGhostHighlight(ghostHighlightRef.current);
         clearTextSelection();
         renderHighlightLayers();
         return ghostHighlightRef.current;
@@ -335,7 +346,7 @@ export const PdfHighlighter = ({
     onSelectionFinished && onSelectionFinished(selectionRef.current);
 
     selectionTip &&
-      setTip({ position: viewportPosition, content: selectionTip });
+    setTip({ position: viewportPosition, content: selectionTip });
   };
 
   const handleMouseDown: PointerEventHandler = (event) => {
@@ -370,7 +381,7 @@ export const PdfHighlighter = ({
   // Render Highlight layers
   const renderHighlightLayer = (
     highlightBindings: HighlightBindings,
-    pageNumber: number,
+    pageNumber: number
   ) => {
     if (!viewerRef.current) return;
 
@@ -379,7 +390,7 @@ export const PdfHighlighter = ({
         <HighlightLayer
           highlightsByPage={groupHighlightsByPage([
             ...highlights,
-            ghostHighlightRef.current,
+            ghostHighlightRef.current
           ])}
           pageNumber={pageNumber}
           scrolledToHighlightId={scrolledToHighlightIdRef.current}
@@ -387,9 +398,30 @@ export const PdfHighlighter = ({
           highlightBindings={highlightBindings}
           children={children}
         />
-      </PdfHighlighterContext.Provider>,
+      </PdfHighlighterContext.Provider>
     );
   };
+
+  const setCopyHandlers = () => {
+    if (!viewerRef.current) return;
+
+    for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
+      const { textLayer } = viewerRef.current!.getPageView(pageNumber - 1) || {};
+      if (!textLayer) continue; // Viewer hasn't rendered page yet
+      if (textLayer.div.oncopy) continue; // already set
+
+      // unfortunately when just adding document.addEventListener('copy', ...), event is not fired within the textLayer
+      // so we need to add the event listener to the textLayer.div
+      textLayer.div.oncopy = (event: ClipboardEvent) => {
+        const selection = getWindow(textLayer.div).getSelection();
+        if (selection) {
+          event.clipboardData?.setData("text/plain", removeNullCharacters(selection.toString()));
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      };
+    }
+  }
 
   const renderHighlightLayers = () => {
     if (!viewerRef.current) return;
@@ -448,7 +480,7 @@ export const PdfHighlighter = ({
     if (viewerRef.current)
       viewerRef.current.viewer?.classList.toggle(
         "PdfHighlighter--disable-selection",
-        isEditInProgressRef.current,
+        isEditInProgressRef.current
       );
   };
 
@@ -476,7 +508,7 @@ export const PdfHighlighter = ({
     viewerRef.current!.container.removeEventListener("scroll", handleScroll);
 
     const pageViewport = viewerRef.current!.getPageView(
-      pageNumber - 1,
+      pageNumber - 1
     ).viewport;
 
     viewerRef.current!.scrollPageIntoView({
@@ -487,10 +519,10 @@ export const PdfHighlighter = ({
         ...pageViewport.convertToPdfPoint(
           0, // Default x coord
           scaledToViewport(boundingRect, pageViewport, usePdfCoordinates).top -
-          SCROLL_MARGIN,
+          SCROLL_MARGIN
         ),
-        0, // Default z coord
-      ],
+        0 // Default z coord
+      ]
     });
 
     scrolledToHighlightIdRef.current = highlight.id;
@@ -499,7 +531,7 @@ export const PdfHighlighter = ({
     // wait for scrolling to finish
     setTimeout(() => {
       viewerRef.current!.container.addEventListener("scroll", handleScroll, {
-        once: true,
+        once: true
       });
     }, 100);
   };
@@ -572,7 +604,7 @@ export const PdfHighlighter = ({
               viewportPosition,
               scaledPosition,
               image,
-              resetSelection,
+              resetSelection
             ) => {
               selectionRef.current = {
                 content: { image },
@@ -582,10 +614,10 @@ export const PdfHighlighter = ({
                   ghostHighlightRef.current = {
                     position: scaledPosition,
                     type: "area",
-                    content: { image },
+                    content: { image }
                   };
                   onCreateGhostHighlight &&
-                    onCreateGhostHighlight(ghostHighlightRef.current);
+                  onCreateGhostHighlight(ghostHighlightRef.current);
                   resetSelection();
                   renderHighlightLayers();
                   return ghostHighlightRef.current;
@@ -597,7 +629,7 @@ export const PdfHighlighter = ({
 
               onSelectionFinished && onSelectionFinished(selectionRef.current);
               selectionTip &&
-                setTip({ position: viewportPosition, content: selectionTip });
+              setTip({ position: viewportPosition, content: selectionTip });
             }}
           />
         )}
